@@ -1,0 +1,21 @@
+//Aryaan Sappayani AND 935009763
+
+/**
+ * Exclusive-Nor gate:
+ * out = (a == b)
+ */
+
+CHIP Xnor {
+    // XNOR = (not A and not B) or (A and B)
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    Not(in=a, out=nota);
+    Not(in=b, out=notb);
+    And(a=nota, b=notb, out=out1);
+
+    And(a=a, b=b, out=out2);
+
+    Or(a=out1, b=out2, out=out);
+}

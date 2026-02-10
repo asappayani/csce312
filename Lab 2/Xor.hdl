@@ -1,0 +1,21 @@
+//Aryaan Sappayani AND 935009763
+
+/**
+ * Exclusive-or gate:
+ * out = not (a == b)
+ */
+
+CHIP Xor {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    // XOR = (not A and B) or (A and not B)
+    Not(in=a, out=nota);
+    And(a=nota, b=b, out=out1);
+
+    Not(in=b, out=notb);
+    And(a=a, b=notb, out=out2);
+
+    Or(a=out1, b=out2, out=out);
+}

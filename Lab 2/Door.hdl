@@ -1,0 +1,41 @@
+//Aryaan Sappayani and 935009763
+
+/**
+ * Automatic Door Chip: 
+ * S K C | open
+   0 0 0 | 0
+   0 0 1 | 0
+   0 1 0 | 1
+   0 1 1 | 1
+   1 0 0 | 1
+   1 0 1 | 0
+   1 1 0 | 1
+   1 1 1 | 1
+ */
+
+CHIP Door {
+    IN S,C,K;
+    OUT Open;
+
+    PARTS:
+    // F = (not S and k) or (S and ((not K and not C) or K))
+
+    // not S and k
+    Not(in=S, out=notS);
+    And(a=notS, b=K, out=out1);
+
+    // not K and not C
+    Not(in=K, out=notK);
+    Not(in=C, out=notC);
+    And(a=notK, b=notC, out=out2);
+
+    // (not K and not C) or K
+    Or(a=out2, b=K, out=out3);
+
+    // (S and ((not K and not C) or K))
+    And(a=S, b=out3, out=out4);
+
+    // F
+    Or(a=out1, b=out4, out=Open);
+
+}
