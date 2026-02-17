@@ -1,0 +1,34 @@
+CHIP SimpleALU {
+    IN x[16], y[16], zx, nx, zy, ny, f, no;
+    OUT out[16], zr, ng;
+    
+    PARTS:
+    // Pre-process x
+    Mux16(a=x, b=false, sel=zx, out=x1);
+    Not16(in=x1, out=notx1);
+    Mux16(a=x1, b=notx1, sel=nx, out=x2);
+    
+    // Pre-process y - BUG #1: 
+    Mux16(a=y, b=false, sel=zy, out=y1);  
+    Not16(in=y1, out=noty1);               
+    Mux16(a=y1, b=noty1, sel=ny, out=y2); 
+    
+    // Compute function - BUG #2: 
+    
+    And16(a=x2, b=y2, out=andOut);
+    Add16(a=x2, b=y2, out=addOut);
+    Mux16(a=andOut, b=addOut, sel=f, out=fOut);
+    
+    // Post-process output - BUG #3: 
+    Not16(in=fOut, out=notfOut);
+    Mux16(a=fOut, b=notfOut, sel=no, out=finalOut);  
+    Mux16(a=finalOut, b=finalOut, sel=false, out=out);
+    
+    // Compute zr flag - BUG #4: 
+    Or16Way(in=finalOut, out=notZr);
+    Not(in=notZr, out=zr);
+
+    // Compute ng flag - BUG #5: 
+    And16(a=finalOut, b[0..14]=false, b[15]=true, out=temp);
+    Or16Way(in=temp, out=ng);  
+}
