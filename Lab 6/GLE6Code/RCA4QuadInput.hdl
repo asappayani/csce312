@@ -1,9 +1,14 @@
-// NAME and UIN
+// ARYAAN SAPPAYANI 935009763
 
 CHIP RCA4QuadInput {
     IN a[4], b[4], c[4], d[4];
     OUT sum[4], cout;
 
 PARTS:
-	
+	RCA4(a=a, b=b, c=false, sum=sum1, cout=cout1);
+    RCA4(a=c, b=d, c=false, sum=sum2, cout=cout2);
+    RCA4(a=sum1, b=sum2, c=false, sum=sum, cout=cout3);
+
+    Or(a=cout1, b=cout2, out=out1);
+    Or(a=out1, b=cout3, out=cout);
 }
