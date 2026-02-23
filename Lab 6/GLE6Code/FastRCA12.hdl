@@ -1,0 +1,21 @@
+// Name and UIN 
+
+/**
+ * Optimizes the carry propagation delay along RCA4 boundaries
+ * using duplication and parallel assembly of logic 
+ * The chip performs out=a+b
+ * Both inputs a and b are in UNSIGNED format
+ * carry output reflects the overflow 
+ */
+
+
+CHIP FastRCA12 {
+    IN a[12], b[12];
+    OUT out[12], carry;
+	
+    PARTS:
+    // Put your code here:
+
+
+    
+}

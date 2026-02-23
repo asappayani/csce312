@@ -1,0 +1,17 @@
+// Name and UIN
+
+/**
+ * Adds or Subtracts two 4-bit values.
+ * Both inputs a and b are in SIGNED 2s complement format
+ * when sub == 0, the chip performs add i.e. out=a+b
+ * when sub == 1, the chip performs subtract i.e. out=a-b
+ */
+
+CHIP AddSub4 {
+    IN a[4], b[4], sub;
+    OUT out[4];
+
+    PARTS:
+   // Put your code here:
+
+}

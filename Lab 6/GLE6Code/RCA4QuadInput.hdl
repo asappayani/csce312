@@ -1,0 +1,9 @@
+// NAME and UIN
+
+CHIP RCA4QuadInput {
+    IN a[4], b[4], c[4], d[4];
+    OUT sum[4], cout;
+
+PARTS:
+	
+}
