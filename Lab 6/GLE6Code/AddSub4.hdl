@@ -12,26 +12,16 @@ CHIP AddSub4 {
     OUT out[4];
 
     PARTS:
-   // Get negative b
-   Not(in=b[0], out=b0);
-   Not(in=b[1], out=b1);
-   Not(in=b[2], out=b2);
-   Not(in=b[3], out=b3);
+    Xor(a=b[0], b=sub, out=b0);
+    Xor(a=b[1], b=sub, out=b1);
+    Xor(a=b[2], b=sub, out=b2);
+    Xor(a=b[3], b=sub, out=b3);
 
-   RCA4(
-    a[0]=b0, a[1]=b1, a[2]=b2, a[3]=b3,
-    b[0]=true, b[1..3]=false,
-    c=false,
-    sum=negativeb,
-    cout=carry
-   );
-
-    // Do a + b
-   RCA4(a=a, b=b, c=false, sum=sum1, cout=c1);
-
-   // Do a - b
-   RCA4(a=a, b=negativeb, c=false, sum=sum2, cout=c2);
-
-    // Pick which one to output based on sub
-    Mux4(a=sum1, b=sum2, sel=sub, out=out);
+    RCA4(
+        a=a,
+        b[0]=b0, b[1]=b1, b[2]=b2, b[3]=b3,
+        c=sub,
+        sum=out,
+        cout=carry
+    );
 }
