@@ -1,4 +1,4 @@
-// Name and UIN 
+// ARYAAN SAPPAYANI 935009763
 
 /**
  * Optimizes the carry propagation delay along RCA4 boundaries
@@ -14,8 +14,44 @@ CHIP FastRCA12 {
     OUT out[12], carry;
 	
     PARTS:
-    // Put your code here:
+    //BLOCK 0
+    RCA4(a=a[0..3], b=b[0..3], c=false, sum=out[0..3], cout=c1);
 
+    //BLOCK 1
+    RCA4(
+        a=a[4..7], b=b[4..7], c=false, 
+        sum[0]=b10s0, sum[1]=b10s1, sum[2]=b10s2, sum[3]=b10s3,
+        cout=c2
+    );
 
-    
+    RCA4(a=a[4..7], b=b[4..7], c=true, 
+        sum[0]=b11s0, sum[1]=b11s1, sum[2]=b11s2, sum[3]=b11s3,
+        cout=c3
+        );
+
+    Mux(a=b10s0, b=b11s0, sel=c1, out=out[4]);
+    Mux(a=b10s1, b=b11s1, sel=c1, out=out[5]);
+    Mux(a=b10s2, b=b11s2, sel=c1, out=out[6]);
+    Mux(a=b10s3, b=b11s3, sel=c1, out=out[7]);
+    Mux(a=c2, b=c3, sel=c1, out=realb1carry);
+
+    //BLOCK 2
+    RCA4(
+        a=a[8..11], b=b[8..11], c=false, 
+        sum[0]=b20s0, sum[1]=b20s1, sum[2]=b20s2, sum[3]=b20s3, 
+        cout=c4
+    );
+
+    RCA4(
+        a=a[8..11], b=b[8..11], c=true, 
+        sum[0]=b21s0, sum[1]=b21s1, sum[2]=b21s2, sum[3]=b21s3,  
+        cout=c5
+    );
+
+    Mux(a=b20s0, b=b21s0, sel=c1, out=out[8]);
+    Mux(a=b20s1, b=b21s1, sel=c1, out=out[9]);
+    Mux(a=b20s2, b=b21s2, sel=c1, out=out[10]);
+    Mux(a=b20s3, b=b21s3, sel=c1, out=out[11]);
+    Mux(a=c4, b=c5, sel=realb1carry, out=carry);
+
 }
