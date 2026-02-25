@@ -48,10 +48,10 @@ CHIP FastRCA12 {
         cout=c5
     );
 
-    Mux(a=b20s0, b=b21s0, sel=c1, out=out[8]);
-    Mux(a=b20s1, b=b21s1, sel=c1, out=out[9]);
-    Mux(a=b20s2, b=b21s2, sel=c1, out=out[10]);
-    Mux(a=b20s3, b=b21s3, sel=c1, out=out[11]);
+    Mux(a=b20s0, b=b21s0, sel=realb1carry, out=out[8]);
+    Mux(a=b20s1, b=b21s1, sel=realb1carry, out=out[9]);
+    Mux(a=b20s2, b=b21s2, sel=realb1carry, out=out[10]);
+    Mux(a=b20s3, b=b21s3, sel=realb1carry, out=out[11]);
     Mux(a=c4, b=c5, sel=realb1carry, out=carry);
 
 }

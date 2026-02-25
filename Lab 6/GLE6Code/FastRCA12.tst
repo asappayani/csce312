@@ -10,4 +10,42 @@ set b %B000000000000,
 eval,
 output;
 
-//fill in more test cases here to thoroughly check correctness of your chip
+set a %B000000000001,
+set b %B000000000001,
+eval,
+output;
+
+set a %B000000001111,
+set b %B000000000001,
+eval,
+output;
+
+set a %B000000010000,
+set b %B000000010000,
+eval,
+output;
+
+set a %B000001011111,
+set b %B000000100001,
+eval,
+output;
+
+set a %B001100010000,
+set b %B010000010000,
+eval,
+output;
+
+set a %B001111111111,
+set b %B010000000001,
+eval,
+output;
+
+set a %B111111111111,
+set b %B000000000001,
+eval,
+output;
+
+set a %B101010101010,
+set b %B010101010101,
+eval,
+output;
