@@ -1,0 +1,12 @@
+// NAME and UIN
+
+/**
+ * 16-bit Arithmetic Right Shift (maintains sign bit at MSB)
+ */
+CHIP ShiftRightArithmetic16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+    // Your code here:
+}

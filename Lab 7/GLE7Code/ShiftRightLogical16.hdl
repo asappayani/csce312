@@ -1,0 +1,12 @@
+// NAME and UIN
+
+/**
+ * 16-bit Logical Right Shift (shifts in a 0 at MSB)
+ */
+CHIP ShiftRightLogical16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+    // Your code here:
+}

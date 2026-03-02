@@ -1,0 +1,12 @@
+// NAME and UIN
+
+/**
+ * Custom 16-bit ALU for BITBOT Specs.
+ */
+CHIP ALU {
+    IN AluOp[3], x[16], y[16];
+    OUT AluOut[16], overflow;
+
+    PARTS:
+    // Your code here:
+}
