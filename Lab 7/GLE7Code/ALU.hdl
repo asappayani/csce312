@@ -1,4 +1,4 @@
-// NAME and UIN
+// Aryaan Sappayani 935009763
 
 /**
  * Custom 16-bit ALU for BITBOT Specs.
@@ -8,5 +8,22 @@ CHIP ALU {
     OUT AluOut[16], overflow;
 
     PARTS:
-    // Your code here:
+    AddSub16(a=x, b=y, sub=AluOp[0], out=addsubout, overflow=cout);
+
+    Nand16(a=x, b=y, out=nandout);
+
+    Or16(a=x, b=y, out=orout);
+    Not16(in=orout, out=norout);
+
+    Xor16(a=x, b=y, out=xorout);
+
+    ShiftRightLogical16(in=y, out=srl);
+    ShiftLeftLogical16(in=y, out=sll);
+    ShiftRightArithmetic16(in=y, out=sra);
+
+    Mux8Way16(a=addsubout, b=addsubout, c=nandout, d=norout, e=xorout, f=srl, g=sll, h=sra, sel=AluOp, out=AluOut);
+
+    Or(a=AluOp[2], b=AluOp[1], out=op21Or);
+    Not(in=op21Or, out=isAddSub);
+    And(a=cout, b=isAddSub, out=overflow);
 }
