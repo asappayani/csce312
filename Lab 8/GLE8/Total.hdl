@@ -1,0 +1,14 @@
+//Total.hdl
+
+//NAME: ARYAAN SAPPAYANI
+//UIN: 935009763
+
+
+
+CHIP Total {
+    IN in[16], reset;
+    OUT out[16];
+
+    PARTS:
+    
+}
