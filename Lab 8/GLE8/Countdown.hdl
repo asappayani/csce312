@@ -10,14 +10,12 @@ CHIP Countdown {
 
     PARTS:
 
-    AddSub16(a=cur, b[0]=true, b[1..15]=false, sub=true, out=dec, overflow=overflow);
+    AddSub16(a=cur, b[0]=true, b[1..15]=false, sub=true, out=subtract, overflow=overflow);
     Or16Way(in=cur, out=any);
     Not(in=any, out=isZero);
 
-    Mux16(a=dec, b=in, sel=isZero, out=next);
+    Mux16(a=subtract, b=in, sel=isZero, out=next);
     Mux16(a=cur, b=cur, sel=false, out=out);
 
     DFF16(in=next, out=cur);
-
-
 }
