@@ -1,0 +1,32 @@
+// TODO: ARYAAN SAPPAYANI and 935009763
+
+CHIP TrafficLights {
+    IN carNS, carEW, timerExpire;
+    OUT NSlight[2], EWlight[2];
+
+    PARTS:
+    DFF(in=nextS1, out=s1);
+    DFF(in=nextS0, out=s0);
+    DFF(in=true, out=started);
+
+    Not(in=s1, out=ns1);
+    Not(in=s0, out=ns0);
+    Not(in=timerExpire, out=nTimer);
+
+    And(a=started, b=ns1, out=NSlight[0]);
+    And(a=ns1, b=ns0, out=nsGreenRaw);
+    And(a=started, b=nsGreenRaw, out=NSlight[1]);
+
+    And(a=started, b=s1, out=EWlight[0]);
+    And(a=s1, b=ns0, out=ewGreenRaw);
+    And(a=started, b=ewGreenRaw, out=EWlight[1]);
+
+    And(a=s0, b=timerExpire, out=s0AndTimer);
+    Xor(a=s1, b=s0AndTimer, out=normalNextS1);
+
+    Mux(a=carEW, b=carNS, sel=s1, out=greenChoice);
+    Mux(a=greenChoice, b=nTimer, sel=s0, out=normalNextS0);
+
+    And(a=started, b=normalNextS1, out=nextS1);
+    And(a=started, b=normalNextS0, out=nextS0);
+}
