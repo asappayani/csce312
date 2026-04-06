@@ -10,10 +10,13 @@ currRegister = 2, this will be what register we need to write to
 counter = 8, this will be our loop counter 
 
 loop:
-    A = currRegister - 1
+    if counter != 0 then continue
+    otherwise end program by going to @exit
+
+    A = currRegister - 1 (get address of previous register)
     D = M (get the value of the previous register)
 
-    A = currRegister - 2
+    A = currRegister - 2(get address of previous previous register)
     D = D + M (this will get value of register before previous register, then add those values together)
 
     A = currRegister
@@ -22,8 +25,7 @@ loop:
     currRegister = currRegister + 1 (move to the next register)
     counter = counter - 1 
 
-    jump back to loop if counter != 0
-    otherwise end program by going to @exit
+    jump back to beginning
 
 @exit
 end program
