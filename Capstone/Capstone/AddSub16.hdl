@@ -1,0 +1,21 @@
+/**
+ * 16-bit Adder/Subtractor
+ * if sub == 0, out = a + b
+ * if sub == 1, out = a - b
+ */
+CHIP AddSub16 {
+    IN a[16], b[16], sub;
+    OUT out[16];
+
+    PARTS:
+    // Use wide chips only (no internal bus indexing).
+    // sub=0: out = a + b
+    // sub=1: out = a - b = a + (~b + 1)
+    Add16(a=a, b=b, out=addOut);
+
+    Not16(in=b, out=notB);
+    Inc16(in=notB, out=twosCompB);
+    Add16(a=a, b=twosCompB, out=subOut);
+
+    Mux16(a=addOut, b=subOut, sel=sub, out=out);
+}

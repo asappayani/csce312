@@ -1,0 +1,70 @@
+/**
+ * Custom 16-bit ALU for BITBOT Specs.
+ * Integrated with a 6-bit to 3-bit instruction decoder.
+ */
+CHIP ALU {
+    IN AluOp[6], x[16], y[16];
+    OUT AluOut[16];
+
+PARTS:
+    // =============================================================
+    // 1. INSTRUCTION DECODER (6-bit to 3-bit Mapping)
+    // Translates AluOp[0..5] into internal wires: sel2, sel1, sel0
+    // =============================================================
+    
+    // Base inverters needed for the logic expressions
+    Not(in=AluOp[0], out=notI0);
+    Not(in=AluOp[3], out=notI3);
+    Not(in=AluOp[4], out=notI4);
+
+    // -- sel2 = I4 AND I3 --
+    And(a=AluOp[4], b=AluOp[3], out=sel2);
+
+    // -- sel1 = I4 AND (notI3 OR (I2 AND notI0)) --
+    And(a=AluOp[2], b=notI0, out=I2AndNotI0);
+    Or(a=notI3, b=I2AndNotI0, out=sel1Term2);
+    And(a=AluOp[4], b=sel1Term2, out=sel1);
+
+    // -- sel0 = (notI4 AND I3) OR (I4 AND notI3 AND I2) OR (I3 AND I2 AND (I1 XOR I0)) --
+    And(a=notI4, b=AluOp[3], out=sel0Term1);
+    
+    And(a=AluOp[4], b=notI3, out=I4AndNotI3);
+    And(a=I4AndNotI3, b=AluOp[2], out=sel0Term2);
+    
+    Xor(a=AluOp[1], b=AluOp[0], out=I1XorI0);
+    And(a=AluOp[3], b=AluOp[2], out=I3AndI2);
+    And(a=I3AndI2, b=I1XorI0, out=sel0Term3);
+    
+    Or(a=sel0Term1, b=sel0Term2, out=sel0Or12);
+    Or(a=sel0Or12, b=sel0Term3, out=sel0);
+
+
+    // =============================================================
+    // 2. ALU EXECUTION CORE
+    // =============================================================
+
+    // Arithmetic operations (sel = 000, 001)
+    AddSub16(a=x, b=y, sub=sel0, out=addsubOut);
+
+    // NAND (sel = 010)
+    And16(a=x, b=y, out=andXY);
+    Not16(in=andXY, out=nandOut);
+
+    // NOR (sel = 011)
+    Or16(a=x, b=y, out=orXY);
+    Not16(in=orXY, out=norOut);
+
+    // XOR (sel = 100)
+    Xor16(a=x, b=y, out=xorOut);
+
+    // Shifts on 'x' (SRC1) to match ISA:
+    // 01 11 [DEST] [SRC1] xxxx [FUNC]
+    ShiftRightLogical16(in=x, out=srlOut);
+    ShiftLeftLogical16(in=x, out=sllOut);
+    ShiftRightArithmetic16(in=x, out=sraOut);
+
+    // Final Multiplexer Selection
+    Mux8Way16(a=addsubOut, b=addsubOut, c=nandOut, d=norOut, 
+              e=xorOut, f=srlOut, g=sllOut, h=sraOut, 
+              sel[0]=sel0, sel[1]=sel1, sel[2]=sel2, out=AluOut);
+}

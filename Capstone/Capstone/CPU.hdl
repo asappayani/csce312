@@ -1,0 +1,19 @@
+// Aryaan Sappayani 935009763
+
+CHIP CPU{
+
+    IN  fromM[16],          // M value input  (M = contents of RAM[Address])
+        In[16],    	        // Instruction for execution
+        Reset;              // Signals whether to re-start the current
+                            // program (Reset==1) or continue executing
+                            // the current program (Reset==0).
+
+    OUT toM[16],            // M value output
+        writeM,             // Write to M 
+        addressM[16],       // Address in data memory (of M)
+        PCOut[16];          // address of next instruction
+
+    PARTS:
+    
+    
+} 
