@@ -2,18 +2,152 @@
 
 CHIP CPU{
 
-    IN  fromM[16],          // M value input  (M = contents of RAM[Address])
-        In[16],    	        // Instruction for execution
-        Reset;              // Signals whether to re-start the current
-                            // program (Reset==1) or continue executing
-                            // the current program (Reset==0).
+    IN  fromM[16],
+        In[16],
+        Reset;
 
-    OUT toM[16],            // M value output
-        writeM,             // Write to M 
-        addressM[16],       // Address in data memory (of M)
-        PCOut[16];          // address of next instruction
+    OUT toM[16],
+        writeM,
+        addressM[16],
+        PCOut[16];
 
     PARTS:
-    
-    
-} 
+    // ------------------------------------------------------------
+    // Helper constants / conversions
+    // ------------------------------------------------------------
+    Imm6To16(in=In[0..5], out=imm16);
+    KeyboardAddr16(out=kbdAddr);
+
+    // ------------------------------------------------------------
+    // Register file: R0..R7
+    // ------------------------------------------------------------
+    Register(in=writeData, load=loadR0, out=r0);
+    Register(in=writeData, load=loadR1, out=r1);
+    Register(in=writeData, load=loadR2, out=r2);
+    Register(in=writeData, load=loadR3, out=r3);
+    Register(in=writeData, load=loadR4, out=r4);
+    Register(in=writeData, load=loadR5, out=r5);
+    Register(in=writeData, load=loadR6, out=r6);
+    Register(in=writeData, load=loadR7, out=r7);
+
+    // In[11:9]
+    Mux8Way16(a=r0, b=r1, c=r2, d=r3, e=r4, f=r5, g=r6, h=r7,
+              sel[0]=In[9], sel[1]=In[10], sel[2]=In[11], out=regD);
+
+    // In[8:6]
+    Mux8Way16(a=r0, b=r1, c=r2, d=r3, e=r4, f=r5, g=r6, h=r7,
+              sel[0]=In[6], sel[1]=In[7], sel[2]=In[8], out=regS1);
+
+    // In[5:3]
+    Mux8Way16(a=r0, b=r1, c=r2, d=r3, e=r4, f=r5, g=r6, h=r7,
+              sel[0]=In[3], sel[1]=In[4], sel[2]=In[5], out=regS2);
+
+    // ------------------------------------------------------------
+    // Decode
+    // ------------------------------------------------------------
+    Not(in=In[15], out=n15);
+    Not(in=In[14], out=n14);
+    Not(in=In[13], out=n13);
+    Not(in=In[12], out=n12);
+
+    And(a=n15, b=n14, out=isArithmetic);    // 00
+    And(a=n15, b=In[14], out=isLogical);    // 01
+    And(a=In[15], b=n14, out=isGroup10);    // 10
+    And(a=In[15], b=In[14], out=isGroup11); // 11
+
+    And(a=isGroup10, b=n13, out=g10n13);
+    And(a=isGroup10, b=In[13], out=g10i13);
+    And(a=isGroup11, b=n13, out=g11n13);
+    And(a=isGroup11, b=In[13], out=g11i13);
+
+    And(a=g10n13, b=n12, out=isREAD);       // 10 00
+    And(a=g10i13, b=n12, out=isWRITE);      // 10 10
+    And(a=g10n13, b=In[12], out=isBEQ);     // 10 01
+    And(a=g10i13, b=In[12], out=isJMP);     // 10 11
+
+    And(a=g11n13, b=n12, out=isOUT);        // 11 00
+    And(a=g11i13, b=n12, out=isINP);        // 11 10
+    And(a=g11n13, b=In[12], out=isCALL);    // 11 01
+    And(a=g11i13, b=In[12], out=isRET);     // 11 11
+
+    Or(a=isArithmetic, b=isLogical, out=useALU);
+    Or(a=isREAD, b=isINP, out=useMem);
+    Or(a=useALU, b=useMem, out=normalWrite);
+
+    And(a=isArithmetic, b=In[12], out=isArithImm);
+    And(a=isLogical, b=In[13], out=logicalHighBit);
+    And(a=logicalHighBit, b=In[12], out=isShift);
+
+    // ------------------------------------------------------------
+    // ALU path
+    // ------------------------------------------------------------
+    Mux16(a=regS2, b=imm16, sel=isArithImm, out=aluY);
+
+    // Required ALU op encodings for provided ALU:
+    // ADD  -> 000000
+    // SUB  -> 001000
+    // NAND -> 010000
+    // NOR  -> 010100
+    // XOR  -> 011000
+    // SLL  -> 011100
+    // SRL  -> 011101
+    // SRA  -> 011110
+    And(a=n15, b=In[13], out=aluOp3);       // arithmetic SUB/SUBI or logical XOR/shift
+    And(a=isLogical, b=In[12], out=aluOp2); // NOR or shifts
+    And(a=isShift, b=In[1], out=aluOp1);    // only SRA
+    And(a=isShift, b=In[0], out=aluOp0);    // only SRL
+
+    ALU(AluOp[0]=aluOp0, AluOp[1]=aluOp1, AluOp[2]=aluOp2,
+        AluOp[3]=aluOp3, AluOp[4]=isLogical, AluOp[5]=false,
+        x=regS1, y=aluY, AluOut=aluOut);
+
+    // ------------------------------------------------------------
+    // PC / control flow
+    // ------------------------------------------------------------
+    IsZero16(in=regS1, out=isZero);
+    And(a=isBEQ, b=isZero, out=takeBEQ);
+
+    PC(in=pcIn, load=pcLoad, inc=true, reset=Reset, out=pcCurr);
+    Mux16(a=pcCurr, b=pcCurr, sel=false, out=PCOut);
+    Inc16(in=pcCurr, out=pcPlus1);
+
+    // BEQ/JMP -> regD, CALL -> regS1, RET -> r7
+    Mux16(a=regD, b=regS1, sel=isCALL, out=pcTargetPreRet);
+    Mux16(a=pcTargetPreRet, b=r7, sel=isRET, out=pcIn);
+
+    Or(a=isJMP, b=isCALL, out=pcLoadA);
+    Or(a=isRET, b=takeBEQ, out=pcLoadB);
+    Or(a=pcLoadA, b=pcLoadB, out=pcLoad);
+
+    // ------------------------------------------------------------
+    // Memory / I-O interface
+    // ------------------------------------------------------------
+    Or(a=isWRITE, b=isOUT, out=writeMInt);
+
+    // toM is just regS1 when writing
+    Mux16(a=regS1, b=regS1, sel=false, out=toMInt);
+
+    // READ uses regS1 address, WRITE/OUT use regD, INP uses keyboard address
+    Mux16(a=regS1, b=regD, sel=writeMInt, out=addrPreInp);
+    Mux16(a=addrPreInp, b=kbdAddr, sel=isINP, out=addressMInt);
+
+    // ------------------------------------------------------------
+    // Write-back path
+    // ------------------------------------------------------------
+    Mux16(a=aluOut, b=fromM, sel=useMem, out=wbPreCall);
+    Mux16(a=wbPreCall, b=pcPlus1, sel=isCALL, out=writeData);
+
+    // Drive chip outputs from internal wires
+    Mux16(a=toMInt, b=toMInt, sel=false, out=toM);
+    Or(a=writeMInt, b=false, out=writeM);
+    Mux16(a=addressMInt, b=addressMInt, sel=false, out=addressM);
+
+    // ------------------------------------------------------------
+    // Register loads
+    // ------------------------------------------------------------
+    DMux8Way(in=normalWrite, sel[0]=In[9], sel[1]=In[10], sel[2]=In[11],
+             a=loadR0, b=loadR1, c=loadR2, d=loadR3,
+             e=loadR4, f=loadR5, g=loadR6, h=loadR7base);
+
+    Or(a=loadR7base, b=isCALL, out=loadR7);
+}

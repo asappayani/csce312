@@ -10,5 +10,10 @@ CHIP Total {
     OUT out[16];
 
     PARTS:
-    
+    AddSub16(a=cur, b=in, sub=false, out=total, overflow=overflow); // add the input to the stored total
+    Mux16(a=total, b[0..15]=false, sel=reset, out=next); // if reset is 0, set the internal state to be the new total, if 1 then set int. state to be 0
+    DFF16(in=next,out=cur); 
+
+    Or16(a=cur, b=false, out=out); //set the out to the new internal state
+
 }
